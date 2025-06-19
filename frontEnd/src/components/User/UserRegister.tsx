@@ -1,4 +1,42 @@
+import { useState } from 'react';
+import { alertError, alertSuccess } from '../../lib/alert';
+import { userRegister } from '../../lib/api/userApi';
+import { Link, useNavigate } from 'react-router';
+
 export default function UserRegister() {
+  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const navigate = useNavigate();
+
+  async function handleSubmit(e:React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      await alertError('Password not match');
+      return;
+    }
+
+    const response = await userRegister({
+      username: username,
+      password: password,
+      name: name,
+    });
+
+    const responseBody = await response.json();
+    console.log(responseBody);
+
+    if (response.status === 200) {
+      await alertSuccess('User created Successfully');
+      await navigate({
+        pathname: '/login',
+      });
+    } else {
+      await alertError(responseBody.errors);
+    }
+  }
+
   return (
     <>
       <div className='animate-fade-in bg-gray-800 bg-opacity-80 p-8 rounded-xl shadow-custom border border-gray-700 backdrop-blur-sm w-full max-w-md'>
@@ -9,7 +47,7 @@ export default function UserRegister() {
           <h1 className='text-3xl font-bold text-white'>Contact Management</h1>
           <p className='text-gray-300 mt-2'>Create a new account</p>
         </div>
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className='mb-4'>
             <label htmlFor='username' className='block text-gray-300 text-sm font-medium mb-2'>
               Username
@@ -25,6 +63,8 @@ export default function UserRegister() {
                 className='w-full pl-10 pr-3 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200'
                 placeholder='Choose a username'
                 required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
           </div>
@@ -43,6 +83,8 @@ export default function UserRegister() {
                 className='w-full pl-10 pr-3 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200'
                 placeholder='Enter your full name'
                 required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
             </div>
           </div>
@@ -61,6 +103,8 @@ export default function UserRegister() {
                 className='w-full pl-10 pr-3 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200'
                 placeholder='Create a password'
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
           </div>
@@ -82,6 +126,8 @@ export default function UserRegister() {
                 className='w-full pl-10 pr-3 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200'
                 placeholder='Confirm your password'
                 required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </div>
           </div>
@@ -95,12 +141,12 @@ export default function UserRegister() {
           </div>
           <div className='text-center text-sm text-gray-400'>
             Already have an account?
-            <a
-              href='index.html'
+            <Link
+              to='/login'
               className='text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200'
             >
               Sign in
-            </a>
+            </Link>
           </div>
         </form>
       </div>
