@@ -1,6 +1,6 @@
 import Swal from "sweetalert2";
 
-export async function alertSuccess(message:any) {
+export async function alertSuccess(message:string) {
   return Swal.fire({
     icon:'success' ,
     title: 'Success',
@@ -8,7 +8,7 @@ export async function alertSuccess(message:any) {
   });
 }
 
-export async function alertError(message:any) {
+export async function alertError(message:string) {
   return Swal.fire({
     icon:'error' ,
     title: 'Ups',

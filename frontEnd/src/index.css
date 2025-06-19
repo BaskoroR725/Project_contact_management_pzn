@@ -1,1 +1,9 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import url('https://fonts.googleapis.com');
+@import url('https://fonts.gstatic.com');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+@theme {
+  --font-sans: 'Poppins', 'sans-serif';
+  --shadow-custom: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+}
