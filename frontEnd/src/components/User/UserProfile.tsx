@@ -1,4 +1,65 @@
+import { useState } from 'react';
+import { useEffectOnce, useLocalStorage } from 'react-use';
+import { userDetail, userUpdatePassword, userUpdateProfile } from '../../lib/api/userApi';
+import { alertError, alertSuccess } from '../../lib/alert';
+
 export default function UserProfile() {
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [token, _] = useLocalStorage<string | undefined>('token', ''); // alarm typescript karena tidak memakai setToken. abaikan saja
+
+  async function fetchUserDetail() {
+    const response = await userDetail(token!); // tanda `!` artinya "saya yakin ini bukan undefined"
+    const responseBody = await response.json();
+    console.log(responseBody);
+
+    if (response.status === 200) {
+      setName(responseBody.data.name);
+    } else {
+      await alertError(responseBody.errors);
+    }
+  }
+
+  async function handleSubmitProfile(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const response = await userUpdateProfile(token!, { name });
+    const responseBody = await response.json();
+    console.log(responseBody);
+
+    if (response.status === 200) {
+      await alertSuccess('Profile updated successfully');
+    } else {
+      await alertError(responseBody.errors);
+    }
+  }
+
+  async function handleSubmitPassword(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      await alertError('Password not matched');
+      return;
+    }
+
+    const response = await userUpdatePassword(token!, { password });
+    const responseBody = await response.json();
+    console.log(responseBody);
+
+    if (response.status === 200) {
+      setPassword('');
+      setConfirmPassword('');
+      await alertSuccess('Password updated successfully');
+    } else {
+      await alertError(responseBody.errors);
+    }
+  }
+
+  useEffectOnce(() => {
+    fetchUserDetail().then(() => console.log('user detail fetched'));
+  });
+
   return (
     <>
       <div>
@@ -16,7 +77,7 @@ export default function UserProfile() {
                 </div>
                 <h2 className='text-xl font-semibold text-white'>Edit Profile</h2>
               </div>
-              <form>
+              <form onSubmit={handleSubmitProfile}>
                 <div className='mb-5'>
                   <label htmlFor='name' className='block text-gray-300 text-sm font-medium mb-2'>
                     Full Name
@@ -31,8 +92,9 @@ export default function UserProfile() {
                       name='name'
                       className='w-full pl-10 pr-3 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200'
                       placeholder='Enter your full name'
-                      defaultValue='John Doe'
                       required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
                     />
                   </div>
                 </div>
@@ -56,7 +118,7 @@ export default function UserProfile() {
                 </div>
                 <h2 className='text-xl font-semibold text-white'>Change Password</h2>
               </div>
-              <form>
+              <form onSubmit={handleSubmitPassword}>
                 <div className='mb-5'>
                   <label
                     htmlFor='new_password'
@@ -75,6 +137,8 @@ export default function UserProfile() {
                       className='w-full pl-10 pr-3 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200'
                       placeholder='Enter your new password'
                       required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                     />
                   </div>
                 </div>
@@ -96,6 +160,8 @@ export default function UserProfile() {
                       className='w-full pl-10 pr-3 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200'
                       placeholder='Confirm your new password'
                       required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                     />
                   </div>
                 </div>

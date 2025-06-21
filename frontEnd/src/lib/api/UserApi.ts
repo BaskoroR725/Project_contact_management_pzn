@@ -81,3 +81,13 @@ export const userDetail = async (token: string): Promise<Response> => {
     },
   });
 };
+
+export const userLogout = async (token: string): Promise<Response> => {
+  return await fetch(`${import.meta.env.VITE_API_PATH}/users/logout`, {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json',
+      Authorization: token,
+    },
+  });
+};
