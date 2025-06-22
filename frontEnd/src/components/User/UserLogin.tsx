@@ -7,7 +7,7 @@ import { useLocalStorage } from 'react-use';
 export default function UserLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [_, setToken ] = useLocalStorage<string | undefined>('token', '');
+  const [, setToken ] = useLocalStorage<string | undefined>('token', '');
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {

@@ -7,7 +7,7 @@ export default function UserProfile() {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [token, _] = useLocalStorage<string | undefined>('token', ''); // alarm typescript karena tidak memakai setToken. abaikan saja
+  const [token,] = useLocalStorage<string | undefined>('token', ''); // alarm typescript karena tidak memakai setToken. abaikan saja
 
   async function fetchUserDetail() {
     const response = await userDetail(token!); // tanda `!` artinya "saya yakin ini bukan undefined"
