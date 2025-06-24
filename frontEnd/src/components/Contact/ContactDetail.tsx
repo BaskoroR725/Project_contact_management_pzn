@@ -4,6 +4,7 @@ import { useParams } from 'react-router';
 import { contactDetail } from '../../lib/api/contactApi';
 import { alertError } from '../../lib/alert';
 import { useEffectOnce, useLocalStorage } from 'react-use';
+import { addressList } from '../../lib/api/addressApi';
 
 export type Contact = {
   id: number;
@@ -13,11 +14,22 @@ export type Contact = {
   phone: string;
 };
 
+type Address = {
+  id: number;
+  street: string;
+  city: string;
+  province: string;
+  country: string;
+  postal_code: string;
+};
+
+
 export default function ContactDetail() {
   const { id } = useParams<{ id: string }>();
   const numericId = parseInt(id || '', 10);
   const [token] = useLocalStorage<string | undefined>('token', '');
   const [contact, setContact] = useState<Contact | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
 
   async function fetchContact() {
     if (!token || !id || isNaN(numericId)) {
@@ -36,8 +48,26 @@ export default function ContactDetail() {
     }
   }
 
+  async function fetchAddresses() {
+    if (!token || !id || isNaN(numericId)) {
+      alertError('Invalid contact ID');
+      return;
+    }
+
+    const response = await addressList(token, numericId);
+    const responseBody = await response.json();
+    console.log(responseBody);
+
+    if (response.status === 200) {
+      setAddresses(responseBody.data);
+    } else {
+      alertError(responseBody.errors);
+    }
+  }
+
   useEffectOnce(() => {
     fetchContact().then(() => console.log('Detail contact fetched successfully'));
+    fetchAddresses().then(() => console.log('Addressses fetched successfully'));
   });
 
   return (
@@ -118,99 +148,57 @@ export default function ContactDetail() {
                   </Link>
                 </div>
                 {/* Address Card 1 */}
-                <div className='bg-gray-700 bg-opacity-50 p-5 rounded-lg shadow-md border border-gray-600 card-hover'>
-                  <div className='flex items-center mb-3'>
-                    <div className='w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-3 shadow-md'>
-                      <i className='fas fa-home text-white' />
+                {addresses.map((address) => (
+                  <div
+                    key={address.id}
+                    className='bg-gray-700 bg-opacity-50 p-5 rounded-lg shadow-md border border-gray-600 card-hover'
+                  >
+                    <div className='flex items-center mb-3'>
+                      <div className='w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-3 shadow-md'>
+                        <i className='fas fa-home text-white' />
+                      </div>
+                      <h4 className='text-lg font-semibold text-white'>Home Address</h4>
                     </div>
-                    <h4 className='text-lg font-semibold text-white'>Home Address</h4>
-                  </div>
-                  <div className='space-y-3 text-gray-300 ml-2 mb-4'>
-                    <p className='flex items-center'>
-                      <i className='fas fa-road text-gray-500 w-6' />
-                      <span className='font-medium w-24'>Street:</span>
-                      <span>123 Main St</span>
-                    </p>
-                    <p className='flex items-center'>
-                      <i className='fas fa-city text-gray-500 w-6' />
-                      <span className='font-medium w-24'>City:</span>
-                      <span>New York</span>
-                    </p>
-                    <p className='flex items-center'>
-                      <i className='fas fa-map text-gray-500 w-6' />
-                      <span className='font-medium w-24'>Province:</span>
-                      <span>NY</span>
-                    </p>
-                    <p className='flex items-center'>
-                      <i className='fas fa-flag text-gray-500 w-6' />
-                      <span className='font-medium w-24'>Country:</span>
-                      <span>USA</span>
-                    </p>
-                    <p className='flex items-center'>
-                      <i className='fas fa-mailbox text-gray-500 w-6' />
-                      <span className='font-medium w-24'>Postal Code:</span>
-                      <span>10001</span>
-                    </p>
-                  </div>
-                  <div className='flex justify-end space-x-3'>
-                    <a
-                      href='edit_address.html'
-                      className='px-4 py-2 bg-gradient text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-md flex items-center'
-                    >
-                      <i className='fas fa-edit mr-2' /> Edit
-                    </a>
-                    <button className='px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-md flex items-center'>
-                      <i className='fas fa-trash-alt mr-2' /> Delete
-                    </button>
-                  </div>
-                </div>
-                {/* Address Card 2 */}
-                <div className='bg-gray-700 bg-opacity-50 p-5 rounded-lg shadow-md border border-gray-600 card-hover'>
-                  <div className='flex items-center mb-3'>
-                    <div className='w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center mr-3 shadow-md'>
-                      <i className='fas fa-building text-white' />
+                    <div className='space-y-3 text-gray-300 ml-2 mb-4'>
+                      <p className='flex items-center'>
+                        <i className='fas fa-road text-gray-500 w-6' />
+                        <span className='font-medium w-24'>Street:</span>
+                        <span>{address.street}</span>
+                      </p>
+                      <p className='flex items-center'>
+                        <i className='fas fa-city text-gray-500 w-6' />
+                        <span className='font-medium w-24'>City:</span>
+                        <span>{address.city}</span>
+                      </p>
+                      <p className='flex items-center'>
+                        <i className='fas fa-map text-gray-500 w-6' />
+                        <span className='font-medium w-24'>Province:</span>
+                        <span>{address.province}</span>
+                      </p>
+                      <p className='flex items-center'>
+                        <i className='fas fa-flag text-gray-500 w-6' />
+                        <span className='font-medium w-24'>Country:</span>
+                        <span>{address.country}</span>
+                      </p>
+                      <p className='flex items-center'>
+                        <i className='fas fa-mailbox text-gray-500 w-6' />
+                        <span className='font-medium w-24'>Postal Code:</span>
+                        <span>{address.postal_code}</span>
+                      </p>
                     </div>
-                    <h4 className='text-lg font-semibold text-white'>Work Address</h4>
+                    <div className='flex justify-end space-x-3'>
+                      <a
+                        href='edit_address.html'
+                        className='px-4 py-2 bg-gradient text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-md flex items-center'
+                      >
+                        <i className='fas fa-edit mr-2' /> Edit
+                      </a>
+                      <button className='px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-md flex items-center'>
+                        <i className='fas fa-trash-alt mr-2' /> Delete
+                      </button>
+                    </div>
                   </div>
-                  <div className='space-y-3 text-gray-300 ml-2 mb-4'>
-                    <p className='flex items-center'>
-                      <i className='fas fa-road text-gray-500 w-6' />
-                      <span className='font-medium w-24'>Street:</span>
-                      <span>456 Oak Ave</span>
-                    </p>
-                    <p className='flex items-center'>
-                      <i className='fas fa-city text-gray-500 w-6' />
-                      <span className='font-medium w-24'>City:</span>
-                      <span>San Francisco</span>
-                    </p>
-                    <p className='flex items-center'>
-                      <i className='fas fa-map text-gray-500 w-6' />
-                      <span className='font-medium w-24'>Province:</span>
-                      <span>CA</span>
-                    </p>
-                    <p className='flex items-center'>
-                      <i className='fas fa-flag text-gray-500 w-6' />
-                      <span className='font-medium w-24'>Country:</span>
-                      <span>USA</span>
-                    </p>
-                    <p className='flex items-center'>
-                      <i className='fas fa-mailbox text-gray-500 w-6' />
-                      <span className='font-medium w-24'>Postal Code:</span>
-                      <span>94102</span>
-                    </p>
-                  </div>
-                  <div className='flex justify-end space-x-3'>
-                    <a
-                      href='edit_address.html'
-                      className='px-4 py-2 bg-gradient text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-md flex items-center'
-                    >
-                      <i className='fas fa-edit mr-2' /> Edit
-                    </a>
-                    <button className='px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-md flex items-center'>
-                      <i className='fas fa-trash-alt mr-2' /> Delete
-                    </button>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
             {/* Action Buttons */}
