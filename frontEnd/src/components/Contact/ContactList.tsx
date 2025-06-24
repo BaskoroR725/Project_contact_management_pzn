@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useEffectOnce, useLocalStorage } from 'react-use';
-import { contactList } from '../../lib/api/contactApi';
-import { alertError } from '../../lib/alert';
+import { contactDelete, contactList } from '../../lib/api/contactApi';
+import { alertConfirm, alertError, alertSuccess } from '../../lib/alert';
 import { Link } from 'react-router';
 
 type Contact = {
@@ -53,6 +53,29 @@ export default function ContactList() {
     setPage(page);
     setReload(!reload);
   }
+
+  async function handleContactDelete(token: string, id?: number) {
+    if (!id) {
+      console.error('ID is undefined');
+      return;
+    }
+
+    if (!(await alertConfirm('Are you sure to delete contact ?'))) {
+      return;
+    }
+
+    const response = await contactDelete(token, id);
+    const responseBody = await response.json();
+    console.log(responseBody);
+
+    if (response.status === 200) {
+      await alertSuccess('Alert delete successfully');
+      setReload(!reload);
+    } else {
+      await alertError(responseBody.errors);
+    }
+  }
+
   useEffect(() => {
     fetchContact().then(() => console.log('Contacts data fetched'));
   }, [reload]);
@@ -268,7 +291,10 @@ export default function ContactList() {
                   >
                     <i className='fas fa-edit mr-2' /> Edit
                   </Link>
-                  <button className='px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-md flex items-center'>
+                  <button
+                    onClick={() => handleContactDelete(token!, contact.id)}
+                    className='px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-md flex items-center'
+                  >
                     <i className='fas fa-trash-alt mr-2' /> Delete
                   </button>
                 </div>
