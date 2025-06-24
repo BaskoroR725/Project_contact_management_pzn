@@ -12,6 +12,10 @@ export interface ContactListPayload {
   page?: number;
 }
 
+export interface UpdateContactPayload extends CreateContactPayload {
+  id: number;
+}
+
 export const contactCreate = async (
   token: string,
   { first_name, last_name, email, phone }: CreateContactPayload,
@@ -61,5 +65,35 @@ export const contactDelete = async (token: string, id: number) => {
       Accept: 'application/json',
       Authorization: token,
     },
+  });
+};
+
+export const contactDetail = async (token: string, id: number) => {
+  return await fetch(`${import.meta.env.VITE_API_PATH}/contacts/${id}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      Authorization: token,
+    },
+  });
+};
+
+export const contactUpdate = async (
+  token: string,
+  { id, first_name, last_name, email, phone }: UpdateContactPayload,
+) => {
+  return await fetch(`${import.meta.env.VITE_API_PATH}/contacts/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: token,
+    },
+    body: JSON.stringify({
+      first_name,
+      last_name,
+      email,
+      phone,
+    }),
   });
 };
