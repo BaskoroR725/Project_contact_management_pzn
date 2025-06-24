@@ -14,6 +14,7 @@ import ContactList from './components/Contact/ContactList.tsx';
 import ContactEdit from './components/Contact/ContactEdit.tsx';
 import ContactDetail from './components/Contact/ContactDetail.tsx';
 import AddressCreate from './components/Address/AddressCreate.tsx';
+import AddressEdit from './components/Address/AddressEdit.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -33,10 +34,11 @@ createRoot(document.getElementById('root')!).render(
             <Route index element={<ContactList />} />
             <Route path='create' element={<ContactCreate />} />
             <Route path=':id'>
-              <Route index element={<ContactDetail />}/>
+              <Route index element={<ContactDetail />} />
               <Route path='edit' element={<ContactEdit />} />
               <Route path='addresses'>
                 <Route path='create' element={<AddressCreate />} />
+                <Route path=':addressId/edit' element={<AddressEdit />} />
               </Route>
             </Route>
           </Route>
